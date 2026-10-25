@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: khusela-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /health
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AGENT_TOKEN
+        sync: false
+      - key: ALLOWED_ORIGIN
+        sync: false

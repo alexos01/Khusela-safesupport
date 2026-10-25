@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Khusela – Safe support</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{--bg:#F1F4F3;--surface:#fff;--ink:#1B2433;--muted:#566274;--line:#D5DCE0;--brand:#26395E;--onbrand:#fff;--warm:#E9A23B;--ok:#2F7355;--alert:#B3372B;--tint:#E4EBF4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121821;--surface:#1B2431;--ink:#E8ECF1;--muted:#9AA6B6;--line:#2E3A4B;--brand:#9DB6E8;--onbrand:#121821;--tint:#243148;--ok:#6CC49A;--alert:#F08A7E;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121821;--surface:#1B2431;--ink:#E8ECF1;--muted:#9AA6B6;--line:#2E3A4B;--brand:#9DB6E8;--onbrand:#121821;--tint:#243148;--ok:#6CC49A;--alert:#F08A7E;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.55 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0 0 .5rem}
+h1{font-size:clamp(1.9rem,6vw,2.8rem)}h2{font-size:1.5rem}h3{font-size:1.15rem}
+p{margin:0 0 .8rem;max-width:62ch}
+a{color:var(--brand)}
+:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem}
+.brand{font:700 1.25rem "Bricolage Grotesque",sans-serif;margin-right:auto;color:var(--ink)}
+button,.btn{font:600 1rem "Source Sans 3",sans-serif;border-radius:10px;border:1.5px solid var(--brand);background:transparent;color:var(--brand);padding:.6rem 1rem;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.primary{background:var(--brand);color:var(--onbrand)}
+.exit{background:var(--alert);border-color:var(--alert);color:#fff}
+nav{display:flex;gap:.25rem;overflow-x:auto;padding:.5rem 1rem;border-bottom:1px solid var(--line)}
+nav button{border-color:transparent;white-space:nowrap}
+nav button[aria-current="true"]{background:var(--tint);border-color:var(--brand)}
+main{max-width:820px;margin:0 auto;padding:1.25rem 1rem 3rem}
+.hero{padding:1rem 0 1.25rem}
+.sos{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0}
+.sos .btn{font-size:1.15rem;padding:.8rem 1.2rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;margin:0 0 .8rem}
+.card.warn{border-left:6px solid var(--warm)}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+.tag{font-size:.85rem;padding:.1rem .55rem;border-radius:99px;background:var(--tint);color:var(--ink)}
+.tag.ok{color:var(--ok);border:1px solid var(--ok);background:transparent}
+select,input,textarea{font:inherit;width:100%;padding:.6rem .7rem;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);min-height:44px}
+label{display:block;font-weight:600;margin:.7rem 0 .25rem}
+ol.steps{padding-left:1.2rem}ol.steps li{margin-bottom:.5rem}
+.note{color:var(--muted);font-size:.95rem}
+.hidden{display:none}
+.hero{border-left:6px solid var(--warm);padding-left:1rem}
+fieldset{border:1px solid var(--line);border-radius:12px;margin:0 0 .8rem}legend{font-weight:600;padding:0 .4rem}
+.chip{font-size:.95rem;min-height:40px;border-radius:99px;background:var(--tint);border-color:transparent;color:var(--ink)}
+.check{display:flex;gap:.6rem;align-items:center;font-weight:400}.check input{width:auto;min-height:0}
+#cs{max-width:320px;background:#fff;color:#223;border-color:#9ab}
+.tag.crit{background:var(--alert);color:#fff}.tag.high{background:var(--warm);color:#1B2433}.tag.late{border:1px solid var(--alert);color:var(--alert);background:transparent}
+.stats{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}.stats div{flex:1 1 110px;background:var(--tint);border-radius:12px;padding:.6rem .8rem}.stats b{display:block;font:700 1.6rem "Bricolage Grotesque",sans-serif}
+#cover{position:fixed;inset:0;z-index:50;background:#dfe9f2;color:#223;padding:calc(2rem + env(safe-area-inset-top,0px)) 1.5rem 2rem;font-family:system-ui,sans-serif}
+#cover h2{font:600 2.4rem system-ui}
+@media (prefers-reduced-motion:no-preference){.hero{animation:in .5s ease-out}@keyframes in{from{opacity:0;transform:translateY(8px)}}}
+</style>
+</head>
+<body>
+<div id="cover" class="hidden" role="region" aria-label="Weather">
+  <input id="cs" placeholder="Search city" aria-label="Search city"><p id="cityn">Today</p><h2>24°C</h2><p>Partly cloudy · High 27° Low 14°</p>
+  <p style="margin-top:2rem"><button id="back" style="color:#456;border-color:#9ab">Tap here to return</button></p>
+</div>
+
+<header class="top">
+  <span class="brand">Khusela</span>
+  <select id="lang" aria-label="Language" style="width:auto"></select>
+  <button id="disc" aria-pressed="false" title="Hide the name and look of this app">Discreet</button>
+  <button class="exit" id="quit" title="Leave now. You can also press Esc twice">Quick exit</button>
+</header>
+<nav aria-label="Sections">
+  <button data-t="help">Get help</button>
+  <button data-t="services">Find services</button>
+  <button data-t="ask">Ask</button>
+  <button data-t="agents">Agents</button>
+  <button data-t="desk">Agent desk</button>
+  <button data-t="setup">Safety setup</button>
+  <button data-t="record">Safe record</button>
+  <button data-t="learn">Learn</button>
+  <button data-t="privacy">Your privacy</button>
+</nav>
+
+<main>
+<p id="offb" class="card warn hidden" role="status">You are offline. Helplines, Learn and your Safe record still work. Alerts and reports need a connection.</p>
+<section id="help" class="hidden">
+  <div class="hero">
+    <h1>You are not alone. Help is here.</h1>
+    <p>Choose your country to see free numbers. In danger right now? Call the emergency number first.</p>
+    <label for="cty">Country</label>
+    <select id="cty"></select>
+    <div class="sos" id="sos"></div>
+    <p class="note" id="alertmsg" role="status"></p>
+  </div>
+  <div class="card warn"><h3>If you cannot call</h3><p>In South Africa you can dial *134*7355# to send a free "Please Call Me" to the GBV Command Centre. A counsellor calls you back.</p></div>
+  <h2>What can happen next</h2>
+  <ol class="steps">
+    <li><b>Get to a safe place.</b> A friend, relative, church, clinic or shelter.</li>
+    <li><b>Get medical care.</b> Go as soon as you can. If you were raped, reaching a clinic or hospital within 72 hours lets you get medicine that can prevent HIV, plus emergency contraception.</li>
+    <li><b>Report when you are ready.</b> You can speak to the police or a one-stop centre. You do not have to wash or change before you report.</li>
+    <li><b>Ask about a protection order.</b> A court can order the abuser to stay away. A counsellor can walk you through it.</li>
+  </ol>
+</section>
+
+<section id="ask" class="hidden">
+  <h1>Ask Khusela</h1>
+  <p>Ask about abuse, your rights or how to help someone. Please leave out your name and address.</p>
+  <div class="row" id="chips"></div>
+  <label for="q">Your question</label><textarea id="q" rows="3"></textarea>
+  <div class="row" style="margin-top:.6rem"><button class="primary" id="go">Ask</button></div>
+  <div class="card" style="margin-top:1rem"><p id="ans" role="status" style="white-space:pre-wrap;margin:0">Answers appear here.</p></div>
+  <p class="note">AI can make mistakes. If you are in danger, call the emergency number.</p>
+</section>
+
+<section id="agents" class="hidden">
+  <h1>Agents who act fast</h1>
+  <p>Agents are vetted volunteers based outside your community, so they have no link to the person harming you. They take your report on WhatsApp, give it a reference number, push it to police or an NGO, and keep a case log so nothing is lost.</p>
+  <div class="card"><h3>Talk to an agent</h3><p>Message an agent now. Share only what you are comfortable with.</p><a class="btn primary" id="wa1" target="_blank" rel="noopener">Chat on WhatsApp</a></div>
+  <div class="card"><h3>Send my record to an agent</h3><p>Opens WhatsApp with a message you can read and edit before you send. Open your Safe record first.</p><button id="sendrec">Prepare message</button><p class="note" id="amsg" role="status"></p></div>
+  <div class="card"><h3>Send a report inside Khusela</h3><p>No name needed. An agent sees only what you write. You get a reference number to check progress.</p>
+    <label for="cdesc">What is happening or happened?</label><textarea id="cdesc" rows="4"></textarea>
+    <label for="ccon">Safe way to reach you (optional WhatsApp number)</label><input id="ccon" inputmode="numeric">
+    <label class="check" style="margin-top:.7rem"><input type="checkbox" id="cc"> I agree to share this with Khusela agents (and my location, if I turned it on)</label>
+    <div class="row" style="margin-top:.7rem"><button class="primary" id="subcase">Send report</button></div><p class="note" id="cmsg" role="status"></p>
+    <label for="sref">Check progress with your reference</label><input id="sref" placeholder="KH-XXXXXX"><div class="row" style="margin-top:.5rem"><button id="schk">Check status</button></div><p class="note" id="smsg2" role="status"></p></div>
+  <div class="card"><h3>Become a volunteer agent</h3><p>Open to counsellors, paralegals, social workers, nurses and trained community volunteers. You are vetted, sign a confidentiality code and join a rota.</p><a class="btn" id="wa2" target="_blank" rel="noopener">Apply on WhatsApp</a></div>
+  <div class="card"><h3>Apply with your details</h3><p>Share only what is needed. A coordinator checks your ID, two references, police clearance and does an interview before you can see any case.</p><label for="apn">Your name or alias</label><input id="apn"><label for="aps">Profession or skills</label><input id="aps"><label for="apc">WhatsApp number</label><input id="apc" inputmode="numeric"><div class="row" style="margin-top:.6rem"><button class="primary" id="applyb">Submit application</button></div><p class="note" id="apm" role="status"></p></div>
+  <div class="card warn"><h3>How a case moves</h3><ol class="steps"><li>The agent confirms you are safe and gives a reference number.</li><li>With your consent, they pass the report to police, a clinic or a shelter near you.</li><li>They log each step with the time, so there is a record if something happens.</li><li>They follow up until a service has taken over.</li></ol></div>
+</section>
+
+<section id="desk" class="hidden">
+  <h1>Agent desk</h1>
+  <p>For vetted volunteers only. Everything here is confidential. Never share case details outside the desk.</p>
+  <div class="card"><h3>Agent training</h3><p>Pass this short check (4 of 5) before you can open the desk. Principles: believe, never blame, survivor decides, consent before sharing, safety first.</p><div id="quiz"></div><button id="qsub">Submit answers</button><p class="note" id="qmsg" role="status"></p></div>
+  <div id="dgate" class="card"><label for="acode">Agent access code</label><input id="acode" type="password" autocomplete="off"><div class="row" style="margin-top:.6rem"><button class="primary" id="alogin">Open desk</button></div><p class="note" id="dmsg" role="status">Enter the access token given to you by your coordinator.</p></div>
+  <div id="dmain" class="hidden">
+    <label for="alias">Your agent alias</label><input id="alias" placeholder="e.g. Agent Thandi">
+    <div class="stats" id="stats"></div>
+    <div class="row"><button id="dexp">Export cases (JSON)</button><button id="dout">Close desk</button></div>
+    <div id="cases" style="margin-top:1rem"></div>
+    <h2 style="margin-top:1.5rem">Volunteer applications</h2><div id="apps"></div>
+  </div>
+</section>
+
+<section id="setup" class="hidden">
+  <h1>Safety setup</h1>
+  <p>Do this while you are safe. It stays on this device.</p>
+  <div class="card"><h3>Secret word</h3><p>In danger, type this word into the search box on the weather cover screen, or into the Ask box. An alert is prepared and the screen looks like normal weather.</p><label for="sw">Secret word</label><input id="sw" autocomplete="off"></div>
+  <div class="card"><h3>Trusted contact</h3><label for="tc">WhatsApp number with country code, digits only</label><input id="tc" inputmode="numeric" placeholder="26876123456"><p class="note">If empty, alerts go to the agent desk.</p></div>
+  <div class="card"><h3>Location</h3><label class="check"><input type="checkbox" id="lc"> Include my exact location in alerts</label><p class="note">Used only when you send an alert. Your browser will ask permission. Nothing is tracked.</p></div>
+  <div class="card"><h3>Panic triggers</h3><p>Shake your phone hard four times, or tap the Khusela name three times fast. Both send an alert and switch to the weather screen. Pressing the power button five times needs the native FNB app.</p><label class="check"><input type="checkbox" id="pshake"> Turn on shake alert</label><p class="note" id="pmsg" role="status"></p></div>
+  <div class="card"><h3>Safe check-in</h3><p>Going somewhere risky? Set a timer. If you do not tap "I am safe" in time, an alert is prepared. Keep this page open.</p><label for="cimin">Minutes</label><input id="cimin" type="number" min="1" value="30"><div class="row" style="margin-top:.6rem"><button id="cistart">Start timer</button><button id="cidone">I am safe</button></div><p class="note" id="cimsg" role="status"></p></div>
+  <div class="card"><h3>My safety plan</h3><div id="plan"></div></div>
+  <div class="row"><button class="primary" id="ssave">Save setup</button><button id="stest">Send a test alert</button></div>
+  <p class="note" id="smsg" role="status"></p>
+</section>
+
+<section id="services" class="hidden">
+  <h1>Find trusted services</h1>
+  <p>Only organisations checked by our partners are listed.</p>
+  <label for="cty2">Country</label><select id="cty2"></select>
+  <label for="kind">Type of help</label>
+  <select id="kind"><option value="">All</option><option>Helpline</option><option>Police</option><option>Medical</option><option>Legal</option><option>Shelter</option></select>
+  <div id="list" style="margin-top:1rem"></div>
+</section>
+
+<section id="record" class="hidden">
+  <h1>Safe record</h1>
+  <p>Write down what happened while you remember it. Notes can help later with police, courts or a counsellor. They are locked with your passphrase and stay on this device only.</p>
+  <div class="card warn"><b>Safety first.</b> If someone checks your phone, they may find this page. Use Discreet mode, choose a passphrase only you know, and delete the record when you no longer need it.</div>
+  <div id="lock">
+    <label for="pw">Passphrase (6+ characters)</label>
+    <input id="pw" type="password" autocomplete="off">
+    <p class="note" id="pwmsg" role="status"></p>
+    <button class="primary" id="unlock">Open my record</button>
+  </div>
+  <div id="form" class="hidden">
+    <label for="dt">When did it happen?</label><input id="dt" type="datetime-local">
+    <label for="what">What happened?</label><textarea id="what" rows="5"></textarea>
+    <label for="who">Who was involved or saw it?</label><textarea id="who" rows="2"></textarea>
+    <label for="inj">Injuries, damage, messages or photos you have</label><textarea id="inj" rows="2"></textarea>
+    <div class="row" style="margin-top:1rem">
+      <button class="primary" id="save">Save locked entry</button>
+      <button id="copy">Copy all entries</button>
+      <button id="wipe">Delete everything</button>
+    </div>
+    <p class="note" id="fmsg" role="status"></p>
+    <div id="entries"></div>
+  </div>
+</section>
+
+<section id="learn" class="hidden">
+  <h1>Know the signs. Act safely.</h1>
+  <div class="card"><h3>Signs of gender-based violence</h3><p><b>Physical:</b> unexplained bruises, injuries or "accidents".<br><b>Emotional:</b> fear, anxiety, shame, low confidence, being cut off from friends and family.<br><b>Control:</b> checking a phone, tracking movements, taking money or ID, stopping work or school.<br><b>Sexual:</b> pressure or force, refusing protection, or threats if you say no.<br><b>Children:</b> sudden changes in behaviour, fear of a person, bedwetting, falling grades.</p></div>
+  <div class="card"><h3>What causes it</h3><p>Violence is a choice made by the person using it. It is never the victim's fault. It grows where power is unequal and abuse is excused: beliefs that men should control women, poverty and money stress, alcohol and drugs, having seen violence as a child, weak punishment for offenders, and silence from families and communities. Anyone can be a victim, including men, boys and LGBTQ+ people.</p></div>
+  <div class="card"><h3>How to react</h3><p><b>If it is happening to you:</b> get to safety, call a helpline, see a nurse or doctor, and keep notes.<br><b>If someone tells you:</b> listen, believe them, say it is not their fault, and offer options without pushing.<br><b>If you see it:</b> do not confront an angry person alone. Call the police, a neighbour or a helpline.<br><b>If you cause harm:</b> step away and ask for help to change. Men's counselling services exist.</p></div>
+  <div class="card"><h3>Abuse is more than hitting</h3><p>It can be controlling your money, phone or movements, threats, insults, forcing sex, or keeping you from family and work.</p></div>
+  <div class="card"><h3>If a friend tells you</h3><p>Listen. Believe them. Say it is not their fault. Share this page only if it is safe, and let them decide what to do.</p></div>
+  <div class="card"><h3>Create a safety plan</h3><p>Pick a place to go and a person to call. Keep ID, medicine, money and a charged phone in one spot. Agree a code word with a trusted friend.</p></div>
+  <div class="card"><h3>Online safety</h3><p>Change passwords, turn off location sharing, and check for apps you did not install. Clear your browser history after visiting help pages.</p></div>
+  <div class="card"><h3>For communities</h3><p>Schools, churches, taxi ranks and chiefs' councils can host talks, name a trusted contact person, and refuse to excuse abuse as "family business".</p></div>
+</section>
+
+<section id="privacy" class="hidden">
+  <h1>Your privacy</h1>
+  <div class="card"><h3>What we do</h3><p>No account. No name. No tracking. We do not send what you write anywhere. Your record is encrypted on your own device.</p></div>
+  <div class="card"><h3>What the live app will add</h3><p>Partner-verified services with last-checked dates, a data policy built on consent, only the data needed, no sharing without your say-so, and anonymous hotspot statistics for prevention. Any report shared with a service happens only when you choose it.</p></div>
+  <div class="card"><h3>Limits you should know</h3><p>Browser history may show you visited this page. Private browsing and Discreet mode help but cannot guarantee safety.</p></div>
+</section>
+</main>
+
+<script>
+var C={
+ ZA:{n:"South Africa",e:"10111",c:[
+  ["GBV Command Centre","Helpline","0800428428","Free, 24 hours. Counselling and referrals."],
+  ["SAPS Police","Police","10111","Emergency police response."],
+  ["Stop Gender Violence Helpline","Helpline","0800150150","Free, 24 hours."],
+  ["Childline South Africa","Helpline","0800055555","Free, for children and those worried about a child."]]},
+ SZ:{n:"Eswatini",e:"999",c:[
+  ["SWAGAA","Helpline","951","Free toll line for abuse support and referrals."],
+  ["Royal Eswatini Police Service","Police","999","Emergency police response."]]},
+ BW:{n:"Botswana",e:"999",c:[["Police","Police","999","Emergency. Partner services to be added."]]},
+ LS:{n:"Lesotho",e:"112",c:[["Emergency services","Police","112","Emergency. Partner services to be added."]]},
+ NA:{n:"Namibia",e:"10111",c:[["Namibian Police","Police","10111","Emergency. Partner services to be added."]]},
+ MZ:{n:"Mozambique",e:"119",c:[["Emergency services","Police","119","Emergency. Partner services to be added."]]}
+};
+var $=function(s){return document.querySelector(s)},tabs=["help","services","ask","agents","desk","setup","record","learn","privacy"];
+function opts(sel){sel.innerHTML=Object.keys(C).map(function(k){return '<option value="'+k+'">'+C[k].n+'</option>'}).join('')}
+var cs=[$("#cty"),$("#cty2")];cs.forEach(opts);
+try{var sv=sessionStorage.getItem("k_c");if(sv&&C[sv])cs.forEach(function(s){s.value=sv})}catch(e){}
+function setC(v){cs.forEach(function(s){s.value=v});try{sessionStorage.setItem("k_c",v)}catch(e){}draw()}
+cs.forEach(function(s){s.onchange=function(){setC(s.value)}});
+$("#kind").onchange=draw;
+function tel(n){return "tel:"+n}
+function draw(){
+ var k=$("#cty").value,d=C[k];
+ $("#sos").innerHTML='<button class="primary" onclick="sos()">'+tr("alert")+'</button><a class="btn exit" href="'+tel(d.e)+'">Emergency: call '+d.e+'</a>'+d.c.filter(function(x){return x[1]=="Helpline"}).slice(0,2).map(function(x){return '<a class="btn primary" href="'+tel(x[2])+'">'+x[0]+' · '+x[2]+'</a>'}).join('');
+ var f=$("#kind").value;
+ $("#list").innerHTML=d.c.filter(function(x){return !f||x[1]==f}).map(function(x){return '<div class="card"><div class="row"><h3 style="margin:0">'+x[0]+'</h3><span class="tag">'+x[1]+'</span></div><p>'+x[3]+'</p><a class="btn primary" href="'+tel(x[2])+'">Call '+x[2]+'</a></div>'}).join('')||'<p class="note">No listings of this type yet for '+d.n+'. We are adding partners.</p>';
+}
+function show(t){
+ if(tabs.indexOf(t)<0)t="help";
+ tabs.forEach(function(x){$("#"+x).classList.toggle("hidden",x!=t)});
+ document.querySelectorAll("nav button").forEach(function(b){b.setAttribute("aria-current",b.dataset.t==t)});
+ window.scrollTo(0,0);
+}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){show(b.dataset.t);try{history.replaceState(null,"","#"+b.dataset.t)}catch(e){}}});
+// Quick exit and discreet mode
+var esc=0,escT;
+function quit(){lockRec();$("#cover").classList.remove("hidden");document.title="Weather";}
+$("#quit").onclick=quit;
+$("#back").onclick=function(){$("#cover").classList.add("hidden");document.title=disc?"Notes":"Khusela – Safe support"};
+document.addEventListener("keydown",function(e){if(e.key=="Escape"){esc++;clearTimeout(escT);escT=setTimeout(function(){esc=0},900);if(esc>=2){esc=0;quit()}}});
+var disc=false;
+$("#disc").onclick=function(){disc=!disc;$("#disc").setAttribute("aria-pressed",disc);document.title=disc?"Notes":"Khusela – Safe support";document.querySelector(".brand").textContent=disc?"Notes":"Khusela";$("#disc").textContent=disc?"Show name":"Discreet"};
+// Encrypted local record
+var key=null,salt=null,KEY="k_rec",entries=[];
+var enc=new TextEncoder(),dec=new TextDecoder();
+function b64(a){return btoa(String.fromCharCode.apply(null,new Uint8Array(a)))}
+function ub(s){return Uint8Array.from(atob(s),function(c){return c.charCodeAt(0)})}
+function derive(pw,s){return crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]).then(function(m){return crypto.subtle.deriveKey({name:"PBKDF2",salt:s,iterations:200000,hash:"SHA-256"},m,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])})}
+function store(){var iv=crypto.getRandomValues(new Uint8Array(12));return crypto.subtle.encrypt({name:"AES-GCM",iv:iv},key,enc.encode(JSON.stringify(entries))).then(function(ct){try{localStorage.setItem(KEY,JSON.stringify({s:b64(salt),i:b64(iv),d:b64(ct)}));return true}catch(e){$("#fmsg").textContent="This browser blocked saving. Use Copy to keep your notes.";return false}})}
+$("#unlock").onclick=function(){
+ var pw=$("#pw").value,m=$("#pwmsg");
+ if(pw.length<6){m.textContent="Use at least 6 characters.";return}
+ var raw=null;try{raw=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+ if(!window.crypto||!crypto.subtle){m.textContent="This browser cannot lock notes. Try another browser.";return}
+ if(raw){salt=ub(raw.s);derive(pw,salt).then(function(k){return crypto.subtle.decrypt({name:"AES-GCM",iv:ub(raw.i)},k,ub(raw.d)).then(function(p){key=k;entries=JSON.parse(dec.decode(p));open()})}).catch(function(){m.textContent="";$("#pw").value="";quit()})}
+ else{salt=crypto.getRandomValues(new Uint8Array(16));derive(pw,salt).then(function(k){key=k;entries=[];open()})}
+};
+function open(){$("#lock").classList.add("hidden");$("#form").classList.remove("hidden");$("#pw").value="";$("#pwmsg").textContent="";list()}
+function lockRec(){key=null;entries=[];$("#form").classList.add("hidden");$("#lock").classList.remove("hidden");["#what","#who","#inj"].forEach(function(s){$(s).value=""});$("#entries").innerHTML=""}
+function esch(s){return s.replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function list(){$("#entries").innerHTML=entries.map(function(e){return '<div class="card"><b>'+esch(e.dt||"No date")+'</b><p>'+esch(e.what)+'</p><p class="note">People: '+esch(e.who||"-")+'<br>Evidence: '+esch(e.inj||"-")+'</p></div>'}).join("")}
+$("#save").onclick=function(){
+ if(!$("#what").value.trim()){$("#fmsg").textContent="Write what happened first.";return}
+ entries.unshift({dt:$("#dt").value,what:$("#what").value,who:$("#who").value,inj:$("#inj").value});
+ store().then(function(ok){if(ok)$("#fmsg").textContent="Saved and locked.";list();["#what","#who","#inj"].forEach(function(s){$(s).value=""})})};
+$("#copy").onclick=function(){var t=entries.map(function(e){return e.dt+"\n"+e.what+"\nPeople: "+e.who+"\nEvidence: "+e.inj}).join("\n\n---\n\n");
+ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#fmsg").textContent="Copied. Paste it somewhere safe."}).catch(function(){$("#fmsg").textContent="Copy was blocked by this browser."})};
+$("#wipe").onclick=function(){if(confirm("Delete all saved notes from this device? This cannot be undone.")){try{localStorage.removeItem(KEY)}catch(e){}lockRec();$("#pwmsg").textContent="Everything was deleted."}};
+// Settings, alerts, agents, AI
+var CFG={askUrl:"https://YOUR-RENDER-APP.onrender.com/api/ask",api:"https://YOUR-RENDER-APP.onrender.com/api",hub:"27000000000",join:"27000000000",partners:{police:"27000000000",clinic:"27000000000",shelter:"27000000000"}};
+var S={};try{S=JSON.parse(localStorage.getItem("k_set"))||{}}catch(e){}
+function sha(s){return crypto.subtle.digest("SHA-256",enc.encode(s)).then(b64)}
+function rid(){return "KH-"+Math.random().toString(36).slice(2,8).toUpperCase()}
+function wa(n,t){return "https://wa.me/"+n+"?text="+encodeURIComponent(t)}
+$("#tc").value=S.t||"";$("#lc").checked=!!S.loc;
+$("#wa1").href=wa(CFG.hub,"Hello, I need help from Khusela.");
+$("#wa2").href=wa(CFG.join,"Hello, I would like to volunteer as a Khusela agent. My profession/skills: ");
+function here(cb){if(S.loc&&navigator.geolocation)navigator.geolocation.getCurrentPosition(function(p){cb(" Location: https://maps.google.com/?q="+p.coords.latitude.toFixed(5)+","+p.coords.longitude.toFixed(5)+" (within "+Math.round(p.coords.accuracy)+"m).")},function(){cb(" (location unavailable)")},{enableHighAccuracy:true,timeout:6000,maximumAge:30000});else cb("")}
+function sos(){var ref=rid();here(function(l){var t="KHUSELA DANGER ALERT. Ref "+ref+". I need help now."+l+" Time: "+new Date().toLocaleString();window.open(wa(S.t||CFG.hub,t),"_blank");var a=$("#alertmsg");if(a)a.textContent="Alert prepared. Reference "+ref+". If WhatsApp did not open, call the emergency number."})}
+window.sos=sos;
+$("#ssave").onclick=function(){var w=$("#sw").value.trim().toLowerCase();var go=function(h){if(h)S.w=h;S.t=$("#tc").value.replace(/\D/g,"");S.loc=$("#lc").checked;try{localStorage.setItem("k_set",JSON.stringify(S));$("#smsg").textContent="Saved on this device."}catch(e){$("#smsg").textContent="This browser blocked saving."}$("#sw").value=""};if(w)sha(w).then(go);else go(null)};
+$("#stest").onclick=function(){if(S.loc&&navigator.geolocation)navigator.geolocation.getCurrentPosition(function(){$("#smsg").textContent="Location works.";sos()},function(){$("#smsg").textContent="Location was blocked. Alerts will send without it.";sos()});else sos()};
+$("#cs").addEventListener("keydown",function(e){if(e.key!="Enter")return;var v=this.value;this.value="";sha(v.trim().toLowerCase()).then(function(h){if(S.w&&h===S.w)sos();$("#cityn").textContent=(v||"Today")+": 26°C, 20% chance of rain"})});
+$("#sendrec").onclick=function(){var m=$("#amsg");if(!key||!entries.length){m.textContent="Open your Safe record and save an entry first.";return}var ref=rid(),e=entries[0];here(function(l){var t="KHUSELA REPORT. Ref "+ref+"."+l+"\nWhen: "+e.dt+"\nWhat happened: "+e.what+"\nPeople: "+e.who+"\nEvidence: "+e.inj;if(confirm("This opens WhatsApp with your latest entry for an agent. You can edit it before sending. Continue?")){window.open(wa(CFG.hub,t),"_blank");m.textContent="Message prepared. Reference "+ref+"."}})};
+["What are the signs of abuse?","A friend told me she is being hit. What do I say?","What is a protection order?","How do I leave safely?"].forEach(function(q){var b=document.createElement("button");b.className="chip";b.textContent=q;b.onclick=function(){$("#q").value=q;$("#go").click()};$("#chips").appendChild(b)});
+$("#go").onclick=function(){var q=$("#q").value.trim(),out=$("#ans");if(!q)return;
+ sha(q.toLowerCase()).then(function(h){if(S.w&&h===S.w){sos();out.textContent="No results found.";$("#q").value="";return}
+  if(!CFG.askUrl&&!(window.claude&&claude.use)){out.textContent="The helper is not available here. See Get help and Learn.";return}
+  out.textContent="Thinking...";var d=C[$("#cty").value];
+  var p="You are Khusela, a calm support guide for survivors of gender-based violence and people helping them in "+d.n+". Rules: plain, kind, no blame, under 170 words. Put safety first. If danger is immediate, tell them to call "+d.e+" and use Quick exit if unsafe. Helplines: "+d.c.filter(function(x){return x[1]=="Helpline"}).map(function(x){return x[0]+" "+x[2]}).join("; ")+". For sexual assault mention medical care within 72 hours. Do not advise confronting the abuser. Give general information, not legal verdicts. Refuse to help find, track or harm anyone. Reply in "+LN[lang]+". Question: "+q;
+  if(CFG.askUrl){fetch(CFG.askUrl,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({q:q,country:d.n,lang:LN[lang],emergency:d.e,helplines:d.c.filter(function(x){return x[1]=="Helpline"}).map(function(x){return x[0]+" "+x[2]}).join("; ")})}).then(function(r){return r.json()}).then(function(j){out.textContent=j.text||"No answer. See Get help."}).catch(function(){out.textContent="The helper could not answer. See Get help and Learn."});return}
+  claude.use("sample").then(function(s){if(!s){out.textContent="The helper is not available here.";return}return s(p,{modelTier:"quick",cache:false,onText:function(r){out.textContent=r.text}})}).catch(function(e){out.textContent=e&&e.code=="rate_limited"?"Too many questions. Please wait a minute.":"The helper could not answer. See Get help and Learn."})})};
+// Agent desk, case workflow, check-in, plan, auto-lock
+var DB=null,cache={},unsub=null,RANK={Critical:0,High:1,Medium:2,Standard:3};
+function RestDB(base,tok){var H=function(){return {"content-type":"application/json","x-agent-token":tok()||""}},ck=function(r){if(!r.ok)throw new Error(r.status);return r.json()};
+ return {doc:function(path){return {set:function(d){return fetch(base+"/doc/"+path,{method:"PUT",headers:H(),body:JSON.stringify(d)}).then(ck)},update:function(d){return fetch(base+"/doc/"+path,{method:"PATCH",headers:H(),body:JSON.stringify(d)}).then(ck)},get:function(){return fetch(base+"/doc/"+path,{headers:H()}).then(function(r){return r.status==404?{exists:false}:ck(r).then(function(d){return {exists:true,data:function(){return d}}})})}}},
+ collection:function(c){return {orderBy:function(){return this},limit:function(){return this},onSnapshot:function(cb,err){function poll(){fetch(base+"/col/"+c,{headers:H()}).then(ck).then(function(a){cb({docs:a.map(function(d){return {id:d.ref||d.id,data:function(){return d}}})})}).catch(err)}poll();var i=setInterval(poll,8000);return function(){clearInterval(i)}}}}}}
+if(CFG.api)DB=RestDB(CFG.api,function(){return window.__tok});
+function score(t){var s=0;[["kill",5],["weapon",5],["gun",5],["knife",5],["strangl",5],["rape",4],["unconscious",4],["bleed",3],["pregnan",3],["child",3],["threat",3],["locked",3],["tonight",3],["now",2],["hospital",2],["beat",2],["hit",2]].forEach(function(k){if(new RegExp("\\b"+k[0]).test(t.toLowerCase()))s+=k[1]});return s>=7?"Critical":s>=4?"High":s>=2?"Medium":"Standard"}
+function noDb(m){m.textContent="In-app reporting is not available in this view. Use WhatsApp or call a helpline."}
+$("#subcase").onclick=function(){var m=$("#cmsg"),t=$("#cdesc").value.trim();
+ if(!t){m.textContent="Write a few words about what is happening.";return}
+ if(!$("#cc").checked){m.textContent="Tick the box to agree to share.";return}
+ if(!DB){noDb(m);return}
+ here(function(l){var ref=rid();DB.doc("cases/"+ref).set({ref:ref,country:C[$("#cty").value].n,summary:t,loc:l,contact:$("#ccon").value.replace(/\D/g,""),urgency:score(t),status:"Received",log:[{t:Date.now(),by:"System",m:"Report received"}],t:Date.now()}).then(function(){m.textContent="Sent. Your reference is "+ref+". Write it down. If you are in danger now, call "+C[$("#cty").value].e+".";$("#cdesc").value="";$("#sref").value=ref}).catch(function(){m.textContent="Could not send. Use WhatsApp or call a helpline."})})};
+$("#schk").onclick=function(){var m=$("#smsg2"),r=$("#sref").value.trim().toUpperCase();if(!r)return;if(!DB){noDb(m);return}
+ DB.doc("status/"+r).get().then(function(s){m.textContent=s.exists?"Status: "+s.data().status+".":"Received. Waiting for an agent to pick it up."}).catch(function(){m.textContent="Could not check. Try again soon."})};
+$("#alogin").onclick=function(){window.__tok=$("#acode").value;if(!S.tr){$("#dmsg").textContent="Complete the agent training first.";return}if(($("#acode").value!=="AGENT-DEMO"&&!CFG.api)){$("#dmsg").textContent="Code not recognised.";return}
+ if(!DB){noDb($("#dmsg"));return}
+ $("#dgate").classList.add("hidden");$("#dmain").classList.remove("hidden");$("#acode").value="";watchApps();
+ unsub=DB.collection("cases").orderBy("t","desc").limit(100).onSnapshot(function(q){cache={};q.docs.forEach(function(d){cache[d.id]=d.data()});drawCases()},function(){$("#cases").innerHTML='<p class="note">You do not have desk access in this view.</p>'})};
+$("#dout").onclick=function(){if(unsub)unsub();unsub=null;cache={};$("#cases").innerHTML="";$("#dmain").classList.add("hidden");$("#dgate").classList.remove("hidden")};
+function drawCases(){var a=Object.keys(cache).map(function(k){return cache[k]}).sort(function(x,y){return RANK[x.urgency]-RANK[y.urgency]||x.t-y.t});
+ var open=a.filter(function(c){return c.status!="Closed"}),late=open.filter(function(c){return c.status=="Received"&&Date.now()-c.t>1800000});
+ $("#stats").innerHTML='<div><b>'+open.length+'</b>open</div><div><b>'+open.filter(function(c){return c.urgency=="Critical"}).length+'</b>critical</div><div><b>'+late.length+'</b>waiting over 30 min</div><div><b>'+(a.length-open.length)+'</b>closed</div>';
+ $("#cases").innerHTML=a.map(function(c){var m=(c.loc||"").match(/https:\/\S+?(?=\s\()/),ago=Math.round((Date.now()-c.t)/60000),cl=c.urgency=="Critical"?"crit":c.urgency=="High"?"high":"";
+  return '<div class="card" data-r="'+esch(c.ref)+'"><div class="row"><h3 style="margin:0">'+esch(c.ref)+'</h3><span class="tag '+cl+'">'+esch(c.urgency)+'</span><span class="tag">'+esch(c.country)+'</span><span class="tag">'+esch(c.status)+'</span>'+(c.status=="Received"&&ago>30?'<span class="tag late">Overdue</span>':'')+'<span class="note">'+ago+' min ago</span></div><p>'+esch(c.summary)+'</p><div class="row">'+(m?'<a class="btn" target="_blank" rel="noopener" href="'+esch(m[0])+'">Open location</a>':'')+(c.contact?'<a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+esch(c.contact)+'">WhatsApp survivor</a>':'')+'</div>'+
+  '<div class="row" style="margin-top:.5rem"><button class="ref" data-k="police">Refer: police</button><button class="ref" data-k="clinic">Refer: clinic</button><button class="ref" data-k="shelter">Refer: shelter</button></div><label>Move to</label><select class="st">'+["Received","Agent assigned","Referred to police","Referred to clinic","Referred to shelter","Closed"].map(function(s){return '<option'+(s==c.status?' selected':'')+'>'+s+'</option>'}).join('')+'</select><label>Note for the case log</label><input class="nt"><div class="row" style="margin-top:.5rem"><button class="primary upd">Update case</button></div>'+
+  '<details style="margin-top:.6rem"><summary>Case log ('+(c.log||[]).length+')</summary>'+(c.log||[]).map(function(l){return '<p class="note" style="margin:.3rem 0">'+new Date(l.t).toLocaleString()+' · '+esch(l.by)+': '+esch(l.m)+'</p>'}).join('')+'</details></div>'}).join("")||'<p class="note">No cases yet.</p>'};
+$("#cases").onclick=function(e){if(e.target.classList.contains("ref")){var el0=e.target.closest(".card"),c0=cache[el0.dataset.r],k=e.target.dataset.k;if(!confirm("Send this case to "+k+"? Only do this with the survivor's consent."))return;window.open(wa(CFG.partners[k],"KHUSELA REFERRAL "+c0.ref+" ("+c0.urgency+", "+c0.country+")\n"+c0.summary+(c0.loc||"")),"_blank");var s0={police:"Referred to police",clinic:"Referred to clinic",shelter:"Referred to shelter"}[k],lg=(c0.log||[]).concat([{t:Date.now(),by:$("#alias").value.trim()||"Agent",m:"Referral sent to "+k}]);DB.doc("cases/"+c0.ref).update({status:s0,log:lg}).then(function(){return DB.doc("status/"+c0.ref).set({status:s0,t:Date.now()})});return}if(!e.target.classList.contains("upd"))return;var el=e.target.closest(".card"),r=el.dataset.r,c=cache[r],st=el.querySelector(".st").value,nt=el.querySelector(".nt").value.trim(),by=$("#alias").value.trim()||"Agent";
+ var log=(c.log||[]).concat([{t:Date.now(),by:by,m:(st!=c.status?"Status: "+st+(nt?". ":""):"")+nt}]);
+ DB.doc("cases/"+r).update({status:st,log:log}).then(function(){return DB.doc("status/"+r).set({status:st,t:Date.now()})}).catch(function(){alert("Could not update. Try again.")})};
+$("#dexp").onclick=function(){if(!window.claude){var b=new Blob([JSON.stringify(Object.keys(cache).map(function(k){return cache[k]}),null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="khusela-cases.json";a.click();return}claude.use("downloads").then(function(d){if(d)return d.save({filename:"khusela-cases.json",data:JSON.stringify(Object.keys(cache).map(function(k){return cache[k]}),null,1)})}).catch(function(){})};
+var ci=null;
+$("#cistart").onclick=function(){var n=Math.max(1,+$("#cimin").value||30);clearTimeout(ci);ci=setTimeout(function(){$("#cimsg").textContent="Check-in missed. Alert prepared.";sos()},n*60000);$("#cimsg").textContent="Check in by "+new Date(Date.now()+n*60000).toLocaleTimeString()+". Keep this page open."};
+$("#cidone").onclick=function(){clearTimeout(ci);$("#cimsg").textContent="Marked safe. Timer stopped."};
+var PL=["A safe place I can go","A trusted person I can call","Copies of ID, birth certificates and clinic cards","Medicine, some cash and a charger","Spare keys","A code word agreed with a friend","Children's school things packed","I know the nearest clinic and police station"],pl={};
+try{pl=JSON.parse(localStorage.getItem("k_plan"))||{}}catch(e){}
+$("#plan").innerHTML=PL.map(function(t,i){return '<label class="check"><input type="checkbox" data-i="'+i+'"'+(pl[i]?' checked':'')+'> '+t+'</label>'}).join("");
+$("#plan").onchange=function(e){pl[e.target.dataset.i]=e.target.checked;try{localStorage.setItem("k_plan",JSON.stringify(pl))}catch(x){}};
+var idle;function bump(){clearTimeout(idle);idle=setTimeout(function(){if(key)lockRec()},120000)}
+["click","keydown","touchstart"].forEach(function(v){document.addEventListener(v,bump)});bump();
+// Languages, panic triggers, training, vetting, offline
+function saveS(){try{localStorage.setItem("k_set",JSON.stringify(S))}catch(e){}}
+var LN={en:"English",zu:"isiZulu",ss:"siSwati",st:"Sesotho"},lang=S.lang||"en";
+var T={en:{help:"Get help",services:"Find services",ask:"Ask",agents:"Agents",desk:"Agent desk",setup:"Safety setup",record:"Safe record",learn:"Learn",privacy:"Your privacy",quit:"Quick exit",disc:"Discreet",h1:"You are not alone. Help is here.",p:"Choose your country to see free numbers. In danger right now? Call the emergency number first.",alert:"Alert my safety circle"},
+zu:{help:"Thola usizo",services:"Thola izinsiza",ask:"Buza",agents:"Abasizi",desk:"Ideski labasizi",setup:"Ukuhlela ukuphepha",record:"Irekhodi ephephile",learn:"Funda",privacy:"Ubumfihlo bakho",quit:"Phuma masinyane",disc:"Ngasese",h1:"Awuwedwa. Usizo lulapha.",p:"Khetha izwe lakho ubone izinombolo zamahhala. Usengozini manje? Shayela inombolo yesimo esiphuthumayo kuqala.",alert:"Xwayisa abangivikelayo"},
+ss:{help:"Tfola lusito",services:"Tfola tinsita",ask:"Buta",agents:"Basiti",desk:"Lihhovisi lebasiti",setup:"Kulungiselela kuphepha",record:"Lirekhodi lelivikelekile",learn:"Fundza",privacy:"Imfihlo yakho",quit:"Phuma ngekushesha",disc:"Ngemfihlo",h1:"Awuwedvwa. Lusito lulapha.",p:"Khetsa live lakho ubone tinombolo tamahhala. Usengotini manje? Shayela inombolo yesimo lesiphutfumako kucala.",alert:"Tjela labakuvikelako"},
+st:{help:"Fumana thuso",services:"Fumana ditshebeletso",ask:"Botsa",agents:"Batshehetsi",desk:"Tafole ya batshehetsi",setup:"Thehelo ya polokeho",record:"Rekoto e sireletsehileng",learn:"Ithute",privacy:"Lekunutu la hao",quit:"Tsoa kapele",disc:"Ka lekunutu",h1:"Ha o a lula o le mong. Thuso e teng.",p:"Kgetha naha ya hao ho bona dinomoro tsa mahala. O kotsing hona jwale? Letsetsa nomoro ya tshohanyetso pele.",alert:"Tsebisa batho ba ntshireletsang"}};
+function tr(k){return (T[lang]||T.en)[k]||T.en[k]}
+function applyLang(){document.documentElement.lang=lang;document.querySelectorAll("nav button").forEach(function(b){b.textContent=tr(b.dataset.t)});$("#quit").textContent=tr("quit");if(!disc)$("#disc").textContent=tr("disc");document.querySelector(".hero h1").textContent=tr("h1");document.querySelector(".hero p").textContent=tr("p");draw()}
+$("#lang").innerHTML=Object.keys(LN).map(function(k){return '<option value="'+k+'">'+LN[k]+'</option>'}).join("");$("#lang").value=lang;
+$("#lang").onchange=function(){lang=this.value;S.lang=lang;saveS();applyLang()};
+var sk=[];function onMotion(e){var a=e.accelerationIncludingGravity;if(!a)return;var m=Math.sqrt(a.x*a.x+a.y*a.y+a.z*a.z),n=Date.now();if(m>28){if(!sk.length||n-sk[sk.length-1]>250)sk.push(n);sk=sk.filter(function(t){return n-t<2000});if(sk.length>=4){sk=[];sos();quit()}}}
+function startShake(ask){var pm=$("#pmsg");if(typeof DeviceMotionEvent==="undefined"){pm.textContent="This device cannot detect shaking.";return}if(ask&&DeviceMotionEvent.requestPermission){DeviceMotionEvent.requestPermission().then(function(r){if(r=="granted")window.addEventListener("devicemotion",onMotion);else pm.textContent="Motion permission was refused."}).catch(function(){})}else window.addEventListener("devicemotion",onMotion);pm.textContent="Shake your phone hard 4 times to send an alert."}
+$("#pshake").checked=!!S.shake;if(S.shake)startShake(false);
+$("#pshake").onchange=function(){S.shake=this.checked;saveS();if(this.checked)startShake(true);else window.removeEventListener("devicemotion",onMotion)};
+var bt=0,btT;document.querySelector(".brand").addEventListener("click",function(){bt++;clearTimeout(btT);btT=setTimeout(function(){bt=0},900);if(bt>=3){bt=0;sos();quit()}});
+var QZ=[["A survivor says she wants to stay with her partner. What do you do?","Respect her choice and keep options open","Tell her she is making a mistake","Report without asking her"],["Who may see case details?","Only people who need them, with consent","Any volunteer","Friends, to get advice"],["A survivor is in immediate danger. First step?","Call emergency services and stay with her","Wait until morning","Advise her to confront the abuser"],["After a rape, what should you tell her about health?","Reach a clinic within 72 hours for HIV prevention","Wash first, then decide","Wait a week"],["Which tone is right?","Calm, believing and non-judging","Ask why she stayed so long","Tell her what she should have done"]];
+function shuf(a){return a.map(function(x){return [Math.random(),x]}).sort(function(x,y){return x[0]-y[0]}).map(function(x){return x[1]})}
+$("#quiz").innerHTML=QZ.map(function(q,i){return '<fieldset><legend>'+q[0]+'</legend>'+shuf(q.slice(1)).map(function(o){return '<label class="check"><input type="radio" name="q'+i+'" value="'+o+'"> '+o+'</label>'}).join("")+'</fieldset>'}).join("");
+$("#qsub").onclick=function(){var n=0;QZ.forEach(function(q,i){var r=document.querySelector('input[name="q'+i+'"]:checked');if(r&&r.value===q[1])n++});if(n>=4){S.tr=true;saveS();$("#qmsg").textContent="Passed ("+n+"/5). You can now open the desk with your access code."}else $("#qmsg").textContent="You got "+n+"/5. Re-read the principles and try again."};
+$("#applyb").onclick=function(){var m=$("#apm"),n=$("#apn").value.trim();if(!n){m.textContent="Add your name or alias.";return}if(!DB){noDb(m);return}var id="APP-"+rid().slice(3);DB.doc("applications/"+id).set({id:id,alias:n,skills:$("#aps").value,contact:$("#apc").value.replace(/\D/g,""),steps:[false,false,false,false],status:"Applied",t:Date.now()}).then(function(){m.textContent="Application sent. Reference "+id+". A coordinator will contact you."}).catch(function(){m.textContent="Could not send. Use the WhatsApp link."})};
+var appc={},appUnsub=null,STEPS=["ID verified","Two references","Police clearance","Interview"];
+function watchApps(){if(appUnsub)appUnsub();appUnsub=DB.collection("applications").orderBy("t","desc").limit(50).onSnapshot(function(q){appc={};q.docs.forEach(function(d){appc[d.id]=d.data()});drawApps()},function(){})}
+function drawApps(){$("#apps").innerHTML=Object.keys(appc).map(function(k){var a=appc[k],ok=a.steps.every(Boolean);return '<div class="card"><div class="row"><h3 style="margin:0">'+esch(a.alias)+'</h3><span class="tag'+(a.status=="Approved"?' ok':'')+'">'+esch(a.status)+'</span></div><p class="note">'+esch(a.skills||"")+'</p>'+STEPS.map(function(s,i){return '<label class="check"><input type="checkbox" data-r="'+a.id+'" data-i="'+i+'"'+(a.steps[i]?' checked':'')+'> '+s+'</label>'}).join("")+(a.contact?'<a class="btn" target="_blank" rel="noopener" href="https://wa.me/'+esch(a.contact)+'">WhatsApp</a> ':'')+'<button class="primary appr" data-r="'+a.id+'"'+(ok&&a.status!="Approved"?'':' disabled')+'>Approve agent</button></div>'}).join("")||'<p class="note">No applications yet.</p>'}
+$("#apps").onchange=function(e){var r=e.target.dataset.r,a=appc[r];if(!a)return;var s=a.steps.slice();s[+e.target.dataset.i]=e.target.checked;DB.doc("applications/"+r).update({steps:s})};
+$("#apps").onclick=function(e){if(e.target.classList.contains("appr"))DB.doc("applications/"+e.target.dataset.r).update({status:"Approved"})};
+function net(){$("#offb").classList.toggle("hidden",navigator.onLine)}window.addEventListener("online",net);window.addEventListener("offline",net);net();
+if("serviceWorker" in navigator&&/^https?:/.test(location.protocol)){navigator.serviceWorker.register("sw.js").catch(function(){})}
+applyLang();show((location.hash||"#help").slice(1));
+</script>
+</body>
+</html>
