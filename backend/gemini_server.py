@@ -7,6 +7,11 @@ Setup:  pip install flask
 Then in the page set  CFG.askUrl = "https://your-domain/api/ask"
 """
 import os, json, time, urllib.request, urllib.error
+try:
+    from dotenv import load_dotenv   # reads backend/.env when running locally
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
 from flask import Flask, request, jsonify
 
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")  # check the current model name in Google AI Studio
