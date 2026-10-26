@@ -275,7 +275,7 @@ $("#copy").onclick=function(){var t=entries.map(function(e){return e.dt+"\n"+e.w
  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#fmsg").textContent="Copied. Paste it somewhere safe."}).catch(function(){$("#fmsg").textContent="Copy was blocked by this browser."})};
 $("#wipe").onclick=function(){if(confirm("Delete all saved notes from this device? This cannot be undone.")){try{localStorage.removeItem(KEY)}catch(e){}lockRec();$("#pwmsg").textContent="Everything was deleted."}};
 // Settings, alerts, agents, AI
-var CFG={askUrl:"",hub:"26879765069",join:"26879765069",partners:{police:"26879765069",clinic:"26879765069",shelter:"26879765069"}};
+var CFG={askUrl:"https://soka01.pythonanywhere.com/api/ask",api:"https://soka01.pythonanywhere.com/api",hub:"26879765069",join:"26879765069",partners:{police:"26879765069",clinic:"26879765069",shelter:"26879765069"}};
 var S={};try{S=JSON.parse(localStorage.getItem("k_set"))||{}}catch(e){}
 function sha(s){return crypto.subtle.digest("SHA-256",enc.encode(s)).then(b64)}
 function rid(){return "KH-"+Math.random().toString(36).slice(2,8).toUpperCase()}
