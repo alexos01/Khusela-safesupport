@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Khusela – Safe support</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap">
@@ -127,7 +128,7 @@ fieldset{border:1px solid var(--line);border-radius:12px;margin:0 0 .8rem}legend
   <h1>Agent desk</h1>
   <p>For vetted volunteers only. Everything here is confidential. Never share case details outside the desk.</p>
   <div class="card"><h3>Agent training</h3><p>Pass this short check (4 of 5) before you can open the desk. Principles: believe, never blame, survivor decides, consent before sharing, safety first.</p><div id="quiz"></div><button id="qsub">Submit answers</button><p class="note" id="qmsg" role="status"></p></div>
-  <div id="dgate" class="card"><label for="acode">Agent access code</label><input id="acode" type="password" autocomplete="off"><div class="row" style="margin-top:.6rem"><button class="primary" id="alogin">Open desk</button></div><p class="note" id="dmsg" role="status">Demo code: AGENT-DEMO. The live app uses verified agent accounts.</p></div>
+  <div id="dgate" class="card"><label for="acode">Agent access code</label><input id="acode" type="password" autocomplete="off"><div class="row" style="margin-top:.6rem"><button class="primary" id="alogin">Open desk</button></div><p class="note" id="dmsg" role="status">Enter the access token given to you by your coordinator.</p></div>
   <div id="dmain" class="hidden">
     <label for="alias">Your agent alias</label><input id="alias" placeholder="e.g. Agent Thandi">
     <div class="stats" id="stats"></div>
@@ -300,7 +301,10 @@ $("#go").onclick=function(){var q=$("#q").value.trim(),out=$("#ans");if(!q)retur
   claude.use("sample").then(function(s){if(!s){out.textContent="The helper is not available here.";return}return s(p,{modelTier:"quick",cache:false,onText:function(r){out.textContent=r.text}})}).catch(function(e){out.textContent=e&&e.code=="rate_limited"?"Too many questions. Please wait a minute.":"The helper could not answer. See Get help and Learn."})})};
 // Agent desk, case workflow, check-in, plan, auto-lock
 var DB=null,cache={},unsub=null,RANK={Critical:0,High:1,Medium:2,Standard:3};
-if(window.claude&&claude.use)claude.use("db").then(function(d){DB=d});
+function RestDB(base,tok){var H=function(){return {"content-type":"application/json","x-agent-token":tok()||""}},ck=function(r){if(!r.ok)throw new Error(r.status);return r.json()};
+ return {doc:function(path){return {set:function(d){return fetch(base+"/doc/"+path,{method:"PUT",headers:H(),body:JSON.stringify(d)}).then(ck)},update:function(d){return fetch(base+"/doc/"+path,{method:"PATCH",headers:H(),body:JSON.stringify(d)}).then(ck)},get:function(){return fetch(base+"/doc/"+path,{headers:H()}).then(function(r){return r.status==404?{exists:false}:ck(r).then(function(d){return {exists:true,data:function(){return d}}})})}}},
+ collection:function(c){return {orderBy:function(){return this},limit:function(){return this},onSnapshot:function(cb,err){function poll(){fetch(base+"/col/"+c,{headers:H()}).then(ck).then(function(a){cb({docs:a.map(function(d){return {id:d.ref||d.id,data:function(){return d}}})})}).catch(err)}poll();var i=setInterval(poll,8000);return function(){clearInterval(i)}}}}}}
+if(CFG.api)DB=RestDB(CFG.api,function(){return window.__tok});
 function score(t){var s=0;[["kill",5],["weapon",5],["gun",5],["knife",5],["strangl",5],["rape",4],["unconscious",4],["bleed",3],["pregnan",3],["child",3],["threat",3],["locked",3],["tonight",3],["now",2],["hospital",2],["beat",2],["hit",2]].forEach(function(k){if(new RegExp("\\b"+k[0]).test(t.toLowerCase()))s+=k[1]});return s>=7?"Critical":s>=4?"High":s>=2?"Medium":"Standard"}
 function noDb(m){m.textContent="In-app reporting is not available in this view. Use WhatsApp or call a helpline."}
 $("#subcase").onclick=function(){var m=$("#cmsg"),t=$("#cdesc").value.trim();
@@ -310,7 +314,7 @@ $("#subcase").onclick=function(){var m=$("#cmsg"),t=$("#cdesc").value.trim();
  here(function(l){var ref=rid();DB.doc("cases/"+ref).set({ref:ref,country:C[$("#cty").value].n,summary:t,loc:l,contact:$("#ccon").value.replace(/\D/g,""),urgency:score(t),status:"Received",log:[{t:Date.now(),by:"System",m:"Report received"}],t:Date.now()}).then(function(){m.textContent="Sent. Your reference is "+ref+". Write it down. If you are in danger now, call "+C[$("#cty").value].e+".";$("#cdesc").value="";$("#sref").value=ref}).catch(function(){m.textContent="Could not send. Use WhatsApp or call a helpline."})})};
 $("#schk").onclick=function(){var m=$("#smsg2"),r=$("#sref").value.trim().toUpperCase();if(!r)return;if(!DB){noDb(m);return}
  DB.doc("status/"+r).get().then(function(s){m.textContent=s.exists?"Status: "+s.data().status+".":"Received. Waiting for an agent to pick it up."}).catch(function(){m.textContent="Could not check. Try again soon."})};
-$("#alogin").onclick=function(){if(!S.tr){$("#dmsg").textContent="Complete the agent training first.";return}if($("#acode").value!=="AGENT-DEMO"){$("#dmsg").textContent="Code not recognised.";return}
+$("#alogin").onclick=function(){window.__tok=$("#acode").value;if(!S.tr){$("#dmsg").textContent="Complete the agent training first.";return}if(($("#acode").value!=="AGENT-DEMO"&&!CFG.api)){$("#dmsg").textContent="Code not recognised.";return}
  if(!DB){noDb($("#dmsg"));return}
  $("#dgate").classList.add("hidden");$("#dmain").classList.remove("hidden");$("#acode").value="";watchApps();
  unsub=DB.collection("cases").orderBy("t","desc").limit(100).onSnapshot(function(q){cache={};q.docs.forEach(function(d){cache[d.id]=d.data()});drawCases()},function(){$("#cases").innerHTML='<p class="note">You do not have desk access in this view.</p>'})};
@@ -325,7 +329,7 @@ function drawCases(){var a=Object.keys(cache).map(function(k){return cache[k]}).
 $("#cases").onclick=function(e){if(e.target.classList.contains("ref")){var el0=e.target.closest(".card"),c0=cache[el0.dataset.r],k=e.target.dataset.k;if(!confirm("Send this case to "+k+"? Only do this with the survivor's consent."))return;window.open(wa(CFG.partners[k],"KHUSELA REFERRAL "+c0.ref+" ("+c0.urgency+", "+c0.country+")\n"+c0.summary+(c0.loc||"")),"_blank");var s0={police:"Referred to police",clinic:"Referred to clinic",shelter:"Referred to shelter"}[k],lg=(c0.log||[]).concat([{t:Date.now(),by:$("#alias").value.trim()||"Agent",m:"Referral sent to "+k}]);DB.doc("cases/"+c0.ref).update({status:s0,log:lg}).then(function(){return DB.doc("status/"+c0.ref).set({status:s0,t:Date.now()})});return}if(!e.target.classList.contains("upd"))return;var el=e.target.closest(".card"),r=el.dataset.r,c=cache[r],st=el.querySelector(".st").value,nt=el.querySelector(".nt").value.trim(),by=$("#alias").value.trim()||"Agent";
  var log=(c.log||[]).concat([{t:Date.now(),by:by,m:(st!=c.status?"Status: "+st+(nt?". ":""):"")+nt}]);
  DB.doc("cases/"+r).update({status:st,log:log}).then(function(){return DB.doc("status/"+r).set({status:st,t:Date.now()})}).catch(function(){alert("Could not update. Try again.")})};
-$("#dexp").onclick=function(){if(!window.claude)return;claude.use("downloads").then(function(d){if(d)return d.save({filename:"khusela-cases.json",data:JSON.stringify(Object.keys(cache).map(function(k){return cache[k]}),null,1)})}).catch(function(){})};
+$("#dexp").onclick=function(){if(!window.claude){var b=new Blob([JSON.stringify(Object.keys(cache).map(function(k){return cache[k]}),null,1)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="khusela-cases.json";a.click();return}claude.use("downloads").then(function(d){if(d)return d.save({filename:"khusela-cases.json",data:JSON.stringify(Object.keys(cache).map(function(k){return cache[k]}),null,1)})}).catch(function(){})};
 var ci=null;
 $("#cistart").onclick=function(){var n=Math.max(1,+$("#cimin").value||30);clearTimeout(ci);ci=setTimeout(function(){$("#cimsg").textContent="Check-in missed. Alert prepared.";sos()},n*60000);$("#cimsg").textContent="Check in by "+new Date(Date.now()+n*60000).toLocaleTimeString()+". Keep this page open."};
 $("#cidone").onclick=function(){clearTimeout(ci);$("#cimsg").textContent="Marked safe. Timer stopped."};
